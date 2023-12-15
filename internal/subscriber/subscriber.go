@@ -26,19 +26,6 @@ func New(cfg config.Config, next processer) *NatsCon {
 
 	n := NatsCon{cfg: cfg, con: sc, next: next}
 
-	// // опция DurableName позволяет получить пропущенные сообщения
-	// // при пере-подключении к серверу nats.
-	// // ss, err := sc.Subscribe("wb-orders", n.recieveNatsMsg, stan.DurableName("my-durable"))
-	// ss, err := n.con.Subscribe(
-	// 	n.cfg.NatsSubject,
-	// 	n.recieveNatsMsg,
-	// 	stan.DurableName(n.cfg.NatsDurable))
-	// if err != nil {
-	// 	log.Printf("error at subscribing to nats %q %q", n.cfg.NatsSubject, n.cfg.NatsDurable)
-	// 	log.Fatal(err)
-	// }
-	// n.sub = ss
-
 	return &n
 }
 
