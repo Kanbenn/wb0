@@ -1,0 +1,33 @@
+version: '3.5'
+
+networks:
+  net:
+
+
+services:
+  pg:
+    image: postgres
+    container_name: wb-pg
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres -h localhost -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - net
+
+  nats:
+    image: nats-streaming
+    container_name: wb-nats
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+    networks:
+      - net
