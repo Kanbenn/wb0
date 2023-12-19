@@ -19,10 +19,20 @@ json.Unmarshal поля order_id и по нему if - корректные да
 Nats-streaming и PostgreSQL локально через [docker-compose](https://github.com/Kanbenn/mywbgonats/blob/main/docker-compose.yaml)
 
 * `Покройте сервис автотестами`
-юнит-тесты для кэша [cache_test.go](https://github.com/Kanbenn/mywbgonats/blob/main/internal/storage/cache_test.go)
+  юнит-тесты для кэша [cache_test.go](https://github.com/Kanbenn/mywbgonats/blob/main/internal/storage/cache_test.go)
 
 * `Устройте вашему сервису стресс-тест: Воспользуйтесь утилитами WRK и Vegeta `
-TODO
+```
+vegeta.exe attack -rate 1000 -duration=30s  -targets vegeta-targets.txt | tee .\results.bin | vegeta.exe report
+Requests      [total, rate, throughput]         29999, 1000.43, 1000.40
+Duration      [total, attack, wait]             29.987s, 29.986s, 1.086ms
+Latencies     [min, mean, 50, 90, 95, 99, max]  505.2µs, 4.873ms, 4.237ms, 9.135ms, 10.587ms, 15.407ms, 58.766ms
+Bytes In      [total, mean]                     22388977, 746.32
+Bytes Out     [total, mean]                     0, 0.00
+Success       [ratio]                           100.00%
+Status Codes  [code:count]                      200:29999
+Error Set:
+```
 
 ### Флаги командной строки
 для указания недефолтного адреса веб-сервера, nats'a и postgres [config.go](https://github.com/Kanbenn/mywbgonats/blob/main/internal/config/config.go)
