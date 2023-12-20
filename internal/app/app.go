@@ -9,23 +9,17 @@ import (
 )
 
 type App struct {
-	// Cfg config.Config
-	// s   storer
-	Ch *storage.Cache
-	Pg *storage.Pg
+	ch *storage.Cache
+	pg *storage.Pg
 }
-
-// func (app *App) processNewOrder(data []byte) {
-
-// }
 
 func New(ch *storage.Cache, pg *storage.Pg) *App {
 	return &App{ch, pg}
 }
 
 func (app *App) RestoreCacheDataFromPg() {
-	orders := app.Pg.SelectAllOrders()
-	app.Ch.AddBatch(orders)
+	orders := app.pg.SelectAllOrders()
+	app.ch.AddBatch(orders)
 }
 
 func (app *App) ProcessNatsMessage(data []byte) {
@@ -40,8 +34,8 @@ func (app *App) ProcessNatsMessage(data []byte) {
 	}
 	o.Data = data
 
-	app.Ch.Add(o.ID, o.Data)
-	log.Println("Cache contents after adding new record:", app.Ch)
+	app.ch.Add(o.ID, o.Data)
+	log.Println("Cache contents after adding new record:", app.ch)
 
-	app.Pg.InsertOrder(o)
+	app.pg.InsertOrder(o)
 }

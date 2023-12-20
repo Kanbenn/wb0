@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/nats-io/stan.go"
+
+	"github.com/Kanbenn/mywbgonats/internal/config"
 )
 
 // publisher это отдельный скрипт, для публикации данных в канал.
@@ -14,14 +16,13 @@ import (
 // два из которых имеют корректный order_uid и успешно считываются, третий - бракуется.
 
 func main() {
-
-	natsAddr := ""
+	cfg := config.New()
 	jfname := ""
-	flag.StringVar(&natsAddr, "a", "nats://localhost:4222", "nats-stream address to publish json to")
+	flag.StringVar(&cfg.Nats, "n", "nats://localhost:4222", "nats-stream address to publish json to")
 	flag.StringVar(&jfname, "j", "", "json file name to publish")
 	flag.Parse()
 
-	sc, err := stan.Connect("test-cluster", "publisher", stan.NatsURL(natsAddr))
+	sc, err := stan.Connect(cfg.NatsCluster, "publisher", stan.NatsURL(cfg.Nats))
 	if err != nil {
 		log.Fatal("error at connecting to nats", err)
 	}

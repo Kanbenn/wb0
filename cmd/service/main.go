@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	cfg := config.NewFromFlags()
+	cfg := config.New()
+	cfg.ParseFlags()
 
 	ch := storage.NewCache()
 	pg := storage.NewPostgres(cfg)
@@ -22,7 +23,7 @@ func main() {
 	sub.SubscribeOnSubject()
 	defer sub.Close()
 
-	srv := webserver.New(cfg, app)
+	srv := webserver.New(cfg, ch)
 	go srv.ShutdownOnSignal()
 	srv.Launch()
 

@@ -9,16 +9,20 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Kanbenn/mywbgonats/internal/app"
 	"github.com/Kanbenn/mywbgonats/internal/config"
 )
+
+type storer interface {
+	Get(key string) (data []byte, found bool)
+	GetAllKeys() (keys []string)
+}
 
 type WebServer struct {
 	http.Server
 }
 
-func New(cfg config.Config, app *app.App) *WebServer {
-	h := newHandler(app)
+func New(cfg config.Config, s storer) *WebServer {
+	h := newHandler(s)
 	r := newRouter(h)
 
 	srv := WebServer{

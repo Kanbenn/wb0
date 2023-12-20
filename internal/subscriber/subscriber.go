@@ -19,7 +19,7 @@ type processer interface {
 }
 
 func New(cfg config.Config, next processer) *NatsCon {
-	sc, err := stan.Connect("test-cluster", "subscriber", stan.NatsURL(cfg.Nats))
+	sc, err := stan.Connect(cfg.NatsCluster, "subscriber", stan.NatsURL(cfg.Nats))
 	if err != nil {
 		log.Fatal("error at connecting to nats", err)
 	}
@@ -37,7 +37,7 @@ func (n *NatsCon) SubscribeOnSubject() {
 		n.recieveNatsMsg,
 		stan.DurableName(n.cfg.NatsDurable))
 	if err != nil {
-		log.Fatal("error at subscribing to nats", err, n.cfg.NatsSubject, n.cfg.NatsDurable)
+		log.Fatal("error at subscribing to nats", err, n.cfg)
 	}
 	n.sub = ss
 }

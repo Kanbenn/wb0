@@ -4,22 +4,21 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/Kanbenn/mywbgonats/internal/app"
 	"github.com/go-playground/pure/v5"
 )
 
 type handler struct {
-	app *app.App
+	s storer
 }
 
-func newHandler(app *app.App) *handler {
-	return &handler{app}
+func newHandler(s storer) *handler {
+	return &handler{s}
 }
 
 func (h *handler) getOrder(w http.ResponseWriter, r *http.Request) {
 	oid := pure.RequestVars(r).URLParam("id")
 
-	o, found := h.app.Ch.Get(oid)
+	o, found := h.s.Get(oid)
 	if !found {
 		http.Error(w, "order_id not found "+oid, http.StatusBadRequest)
 		return
@@ -40,5 +39,5 @@ func (h *handler) getIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	templ := template.Must(template.New("index").Parse(indexPage))
-	templ.Execute(w, h.app.Ch.GetAllKeys())
+	templ.Execute(w, h.s.GetAllKeys())
 }
