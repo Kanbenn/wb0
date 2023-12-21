@@ -23,6 +23,7 @@ func (app *App) RestoreCacheDataFromPg() {
 }
 
 func (app *App) ProcessNatsMessage(data []byte) {
+	log.Println("processing new nats message")
 	o := models.Order{}
 	if err := json.Unmarshal(data, &o); err != nil {
 		log.Println("ProcessNatsMessage: error at unmarshalling the data", err)
@@ -35,7 +36,6 @@ func (app *App) ProcessNatsMessage(data []byte) {
 	o.Data = data
 
 	app.ch.Add(o.ID, o.Data)
-	log.Println("Cache contents after adding new record:", app.ch)
 
 	app.pg.InsertOrder(o)
 }

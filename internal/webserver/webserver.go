@@ -43,7 +43,7 @@ func (srv *WebServer) ShutdownOnSignal() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	log.Println("shutting down the web-server..")
+	log.Println("gracefully shutting down the web-server..")
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("failed to shutdown the server gracefully, forcing exit", err)
 	}

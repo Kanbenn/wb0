@@ -29,7 +29,7 @@ func (h *handler) getOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) getIndex(w http.ResponseWriter, r *http.Request) {
 	indexPage := `
-	<h3>Список поступивших заказов:</h3>
+	<h3>Список поступивших заказов{{ if not . }} пуст.{{ else }}:{{ end }}</h3>
 	<ul>
 		{{range .}}
 			<li><a href="/order/{{.}}">{{.}}</a></li>
