@@ -16,6 +16,7 @@ import (
 
 func main() {
 	cfg := config.New()
+	cfg.ParseFlags()
 
 	jsnFileName := ""
 	flag.StringVar(&jsnFileName, "j", "", "json file name to publish")
