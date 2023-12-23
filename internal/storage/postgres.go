@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
 	"github.com/Kanbenn/mywbgonats/internal/config"
@@ -45,7 +46,11 @@ func (pg *Pg) InsertOrder(o models.Order) {
 	q := "INSERT INTO orders (order_uid, order_data) VALUES(:order_uid, :order_data)"
 	_, err := pg.Sqlx.NamedExec(q, o)
 	if err != nil {
-		log.Println("pg.InsertOrder error:", err)
+		if isNotUniqueInsert(err) {
+			log.Println("pg.InsertOrder order_uid already exists, skipping:", o.ID)
+			return
+		}
+		log.Printf("pg.InsertOrder unexpected error: %s %v \n", o.ID, err)
 	}
 }
 
@@ -56,4 +61,11 @@ func (pg *Pg) SelectAllOrders() (orders []models.Order) {
 		log.Println("pg.SelectAllOrders error:", err)
 	}
 	return orders
+}
+
+func isNotUniqueInsert(e error) bool {
+	if err, ok := e.(*pq.Error); ok && err.Code == "23505" {
+		return true
+	}
+	return false
 }

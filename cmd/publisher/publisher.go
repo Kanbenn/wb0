@@ -16,11 +16,8 @@ import (
 
 func main() {
 	cfg := config.New()
-	cfg.ParseFlags()
-
-	jsnFileName := ""
-	flag.StringVar(&jsnFileName, "j", "", "json file name to publish")
-	flag.Parse()
+	natsAddr, jsnFileName := parseFlags()
+	cfg.Nats = natsAddr
 
 	pub := pubsub.New(cfg, "publisher")
 	defer pub.Close()
@@ -36,6 +33,13 @@ func main() {
 	pub.Publish([]byte(jsn1good))
 	pub.Publish([]byte(jsn2bad))
 	pub.Publish([]byte(jsn3good))
+}
+
+func parseFlags() (natsAddr, jsnFileName string) {
+	flag.StringVar(&natsAddr, "n", "nats://localhost:4222", "json file name to publish")
+	flag.StringVar(&jsnFileName, "j", "", "json file name to publish")
+	flag.Parse()
+	return natsAddr, jsnFileName
 }
 
 func readJsnDataFromFile(fpath string) []byte {

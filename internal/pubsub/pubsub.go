@@ -23,7 +23,7 @@ func New(cfg config.Config, clientID string) *NatsCon {
 	if err != nil {
 		log.Fatal("error at connecting to nats", err)
 	}
-	log.Println("connected to nats-stream")
+	log.Println("connected to nats-stream as", clientID)
 	return &NatsCon{cfg: cfg, con: sc}
 }
 
@@ -48,8 +48,10 @@ func (n *NatsCon) Publish(data []byte) {
 }
 
 func (n *NatsCon) Close() {
-	n.sub.Close()
-	n.con.Close()
+	if n.sub != nil {
+		log.Println("closing nats subscription", n.sub.Close())
+	}
+	log.Println("closing nats connection", n.con.Close())
 }
 
 func (n *NatsCon) recieveNatsMsg(m *stan.Msg) {

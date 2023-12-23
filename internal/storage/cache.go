@@ -27,7 +27,7 @@ func (c *Cache) Add(key string, val []byte) {
 	c.withFullLock(func() {
 		_, exists := c.m[key]
 		if exists {
-			log.Println("Cache.Add error: key already exists", key)
+			log.Println("Cache.Add key already exists, skipping", key)
 			return
 		}
 		c.m[key] = val
@@ -35,11 +35,9 @@ func (c *Cache) Add(key string, val []byte) {
 }
 
 func (c *Cache) AddBatch(in []models.Order) {
-	c.withFullLock(func() {
-		for _, o := range in {
-			c.m[o.ID] = o.Data
-		}
-	})
+	for _, o := range in {
+		c.Add(o.ID, o.Data)
+	}
 }
 
 func (c *Cache) Get(key string) (data []byte, found bool) {
