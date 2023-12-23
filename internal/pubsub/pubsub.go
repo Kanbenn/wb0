@@ -1,4 +1,4 @@
-package subscriber
+package pubsub
 
 import (
 	"log"
@@ -18,18 +18,18 @@ type processer interface {
 	ProcessNatsMessage([]byte)
 }
 
-func New(cfg config.Config, next processer) *NatsCon {
-	sc, err := stan.Connect(cfg.NatsCluster, "subscriber", stan.NatsURL(cfg.Nats))
+func New(cfg config.Config, clientID string) *NatsCon {
+	sc, err := stan.Connect(cfg.NatsCluster, clientID, stan.NatsURL(cfg.Nats))
 	if err != nil {
 		log.Fatal("error at connecting to nats", err)
 	}
-
-	n := NatsCon{cfg: cfg, con: sc, next: next}
-
-	return &n
+	log.Println("connected to nats-stream")
+	return &NatsCon{cfg: cfg, con: sc}
 }
 
-func (n *NatsCon) SubscribeOnSubject() {
+func (n *NatsCon) SubscribeOnSubject(next processer) {
+	n.next = next
+
 	// опция DurableName позволяет получить пропущенные сообщения
 	// при пере-подключении к серверу nats.
 	ss, err := n.con.Subscribe(
@@ -42,12 +42,17 @@ func (n *NatsCon) SubscribeOnSubject() {
 	n.sub = ss
 }
 
+func (n *NatsCon) Publish(data []byte) {
+	log.Println("publishing new msg to nats")
+	n.con.Publish(n.cfg.NatsSubject, data)
+}
+
 func (n *NatsCon) Close() {
 	n.sub.Close()
 	n.con.Close()
 }
 
 func (n *NatsCon) recieveNatsMsg(m *stan.Msg) {
-	log.Println("handleMsg: got new msg from nats", m.Size(), m.Timestamp)
+	log.Println("got new msg from nats", m.Size(), m.Timestamp)
 	n.next.ProcessNatsMessage(m.Data)
 }

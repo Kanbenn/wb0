@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/Kanbenn/mywbgonats/internal/app"
 	"github.com/Kanbenn/mywbgonats/internal/config"
+	"github.com/Kanbenn/mywbgonats/internal/pubsub"
 	"github.com/Kanbenn/mywbgonats/internal/storage"
-	"github.com/Kanbenn/mywbgonats/internal/subscriber"
 	"github.com/Kanbenn/mywbgonats/internal/webserver"
 )
 
@@ -19,8 +19,8 @@ func main() {
 	app := app.New(ch, pg)
 	app.RestoreCacheDataFromPg()
 
-	sub := subscriber.New(cfg, app)
-	sub.SubscribeOnSubject()
+	sub := pubsub.New(cfg, "subscriber")
+	sub.SubscribeOnSubject(app)
 	defer sub.Close()
 
 	srv := webserver.New(cfg, ch)

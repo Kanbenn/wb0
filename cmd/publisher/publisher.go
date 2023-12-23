@@ -5,9 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/nats-io/stan.go"
-
 	"github.com/Kanbenn/mywbgonats/internal/config"
+	"github.com/Kanbenn/mywbgonats/internal/pubsub"
 )
 
 // publisher это отдельный скрипт, для публикации данных в канал.
@@ -17,35 +16,36 @@ import (
 
 func main() {
 	cfg := config.New()
-	jfname := ""
-	flag.StringVar(&cfg.Nats, "n", "nats://localhost:4222", "nats-stream address to publish json to")
-	flag.StringVar(&jfname, "j", "", "json file name to publish")
+
+	jsnFileName := ""
+	flag.StringVar(&jsnFileName, "j", "", "json file name to publish")
 	flag.Parse()
 
-	sc, err := stan.Connect(cfg.NatsCluster, "publisher", stan.NatsURL(cfg.Nats))
-	if err != nil {
-		log.Fatal("error at connecting to nats", err)
-	}
-	defer sc.Close()
+	pub := pubsub.New(cfg, "publisher")
+	defer pub.Close()
 
-	log.Println("publishing messages to nats-stream")
-
-	if jfname != "" {
-		jsn, err := os.ReadFile(jfname)
-		if err != nil {
-			log.Fatal("couldn't read file:", jfname)
-		}
-		sc.Publish("wb-orders", jsn)
+	if jsnFileName != "" {
+		jdata := readJsnDataFromFile(jsnFileName)
+		pub.Publish(jdata)
 		return
 	}
 
-	sc.Publish("wb-orders", []byte(jsn1))
-	sc.Publish("wb-orders", []byte(jsn2))
-	sc.Publish("wb-orders", []byte(jsn3))
-
+	// если программа была запущена без флага -j, тогда отправляю
+	// все три заказа из локальных переменных ниже:
+	pub.Publish([]byte(jsn1good))
+	pub.Publish([]byte(jsn2bad))
+	pub.Publish([]byte(jsn3good))
 }
 
-var jsn1 = `
+func readJsnDataFromFile(fpath string) []byte {
+	data, err := os.ReadFile(fpath)
+	if err != nil {
+		log.Fatal("couldn't read file:", fpath)
+	}
+	return data
+}
+
+var jsn1good = `
 	{"order_uid": "b563feb7b2b84b6test",
 	"track_number": "WBILMTESTTRACK",
 	"entry": "WBIL",
@@ -97,7 +97,7 @@ var jsn1 = `
 	`
 
 // "order_uid": "f563fef7f2f84f6test",
-var jsn2 = `
+var jsn2bad = `
 	{
 	"track_number": "WBILMTESTTRACK",
 	"entry": "WBIL",
@@ -147,7 +147,7 @@ var jsn2 = `
 	"oof_shard": "1"
   }`
 
-var jsn3 = `
+var jsn3good = `
 	{"order_uid": "f563fef7f2f84f6test",
 	"track_number": "WBILMTESTTRACK",
 	"entry": "WBIL",
