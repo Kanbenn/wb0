@@ -8,34 +8,38 @@ import (
 )
 
 type NatsCon struct {
-	cfg  config.Config
-	con  stan.Conn
-	sub  stan.Subscription
-	next processer
+	cfg     config.Config
+	con     stan.Conn
+	sub     stan.Subscription
+	next    processer
+	subject string
+	durable string
 }
 
 type processer interface {
 	ProcessNatsMessage([]byte)
 }
 
-func New(cfg config.Config, clientID string) *NatsCon {
-	sc, err := stan.Connect(cfg.NatsCluster, clientID, stan.NatsURL(cfg.Nats))
+func Connect(cluster, addr, clientID string) *NatsCon {
+	sc, err := stan.Connect(cluster, clientID, stan.NatsURL(addr))
 	if err != nil {
 		log.Fatal("error at connecting to nats", err)
 	}
 	log.Println("connected to nats-stream as", clientID)
-	return &NatsCon{cfg: cfg, con: sc}
+	return &NatsCon{con: sc}
 }
 
-func (n *NatsCon) SubscribeOnSubject(next processer) {
+func (n *NatsCon) RegisterMessageProcessor(next processer) {
 	n.next = next
+}
 
+func (n *NatsCon) StartListeningForNewMessages() {
 	// опция DurableName позволяет получить пропущенные сообщения
 	// при пере-подключении к серверу nats.
 	ss, err := n.con.Subscribe(
 		n.cfg.NatsSubject,
 		n.recieveNatsMsg,
-		stan.DurableName(n.cfg.NatsDurable))
+		stan.DurableName(n.durable))
 	if err != nil {
 		log.Fatal("error at subscribing to nats", err, n.cfg)
 	}

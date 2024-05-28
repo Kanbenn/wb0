@@ -7,7 +7,6 @@ import (
 	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
-	"github.com/Kanbenn/mywbgonats/internal/config"
 	"github.com/Kanbenn/mywbgonats/internal/models"
 )
 
@@ -20,19 +19,18 @@ const createTable = `
 
 type Pg struct {
 	Sqlx *sqlx.DB
-	Cfg  config.Config
 }
 
-func NewPostgres(cfg config.Config) *Pg {
-	conn, err := sqlx.Open("postgres", cfg.PgConnStr)
+func NewPostgres(pgConnStr string) *Pg {
+	conn, err := sqlx.Open("postgres", pgConnStr)
 	if err != nil {
-		log.Fatal("error at connecting to Postgres:", cfg.PgConnStr, err)
+		log.Fatal("error at connecting to Postgres:", pgConnStr, err)
 	}
 
-	pg := Pg{conn, cfg}
+	pg := Pg{conn}
 
 	if _, err := pg.Sqlx.Exec(createTable); err != nil {
-		log.Println("error at creating db-tables:", pg.Cfg.PgConnStr, conn)
+		log.Println("error at creating db-tables:", pgConnStr, conn)
 		log.Fatal(err)
 	}
 	return &pg

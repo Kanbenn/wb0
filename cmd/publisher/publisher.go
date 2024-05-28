@@ -17,9 +17,9 @@ import (
 func main() {
 	cfg := config.New()
 	natsAddr, jsnFileName := parseFlags()
-	cfg.Nats = natsAddr
+	cfg.NatsAddr = natsAddr
 
-	pub := pubsub.New(cfg, "publisher")
+	pub := pubsub.Connect(cfg.NatsCluster, cfg.NatsAddr, "publisher")
 	defer pub.Close()
 
 	if jsnFileName != "" {

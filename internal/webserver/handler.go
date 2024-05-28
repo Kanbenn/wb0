@@ -18,13 +18,13 @@ func newHandler(s storer) *handler {
 func (h *handler) getOrder(w http.ResponseWriter, r *http.Request) {
 	oid := pure.RequestVars(r).URLParam("id")
 
-	o, found := h.s.Get(oid)
+	order, found := h.s.Get(oid)
 	if !found {
 		http.Error(w, "order_id not found "+oid, http.StatusBadRequest)
 		return
 	}
 
-	pure.JSONBytes(w, http.StatusOK, o)
+	pure.JSONBytes(w, http.StatusOK, order)
 }
 
 func (h *handler) getIndex(w http.ResponseWriter, r *http.Request) {

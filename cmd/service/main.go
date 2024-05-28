@@ -13,14 +13,15 @@ func main() {
 	cfg.ParseFlags()
 
 	ch := storage.NewCache()
-	pg := storage.NewPostgres(cfg)
+	pg := storage.NewPostgres(cfg.PgConnStr)
 	defer pg.Close()
 
 	app := app.New(ch, pg)
 	app.RestoreCacheDataFromPg()
 
-	sub := pubsub.New(cfg, "subscriber")
-	sub.SubscribeOnSubject(app)
+	sub := pubsub.Connect(cfg.NatsCluster, cfg.NatsAddr, "subscriber")
+	sub.RegisterMessageProcessor(app)
+	sub.StartListeningForNewMessages()
 	defer sub.Close()
 
 	srv := webserver.New(cfg, ch)
